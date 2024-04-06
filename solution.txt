@@ -1,0 +1,45 @@
+import streamlit as st
+import pandas as pd
+from rpy2.robjects import r
+
+r('''
+your_r_function <- function() {
+
+  library(rvest)
+  library(dplyr)
+  library(jsonlite)
+
+  product_dataset <- data.frame()
+
+  url <- "https://www.ebay.com/b/Antivirus-Security-Software/175689/bn_738281"
+  product <- read_html(url)
+
+  product_name <- product %>% html_nodes(".s-item__title") %>% html_text()
+  product_price <- product %>% html_nodes(".s-item__price") %>% html_text()
+
+  product_dataset <- data.frame(product_name, product_price, stringsAsFactors = FALSE)
+
+  write_json(product_dataset, "Product (List 01).json")
+
+  json_data <- fromJSON("Product (List 01).json")
+
+  return(json_data)
+
+}
+''')
+
+def call_r_function():
+    result = r.your_r_function()
+    return result
+
+def main():
+    st.title("Streamlit App with R Function")
+    st.write("This app integrates an R function to scrape data from eBay.")
+
+    result = call_r_function()
+    df = pd.DataFrame(result)
+
+    st.write(df)
+
+if __name__ == "__main__":
+    main()
